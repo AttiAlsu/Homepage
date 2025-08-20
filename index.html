@@ -170,6 +170,20 @@ function updateGradient(type, value) {
   localStorage.setItem('--bg-main', gradient);
 }
 
+function applyStoredSettings() {
+  const variables = ['--text-color', '--button-color', '--sidebar-color', '--bg-start', '--bg-end'];
+  variables.forEach(variable => {
+    const value = localStorage.getItem(variable);
+    if (value) {
+      document.documentElement.style.setProperty(variable, value);
+    }
+  });
+  const start = localStorage.getItem('--bg-start') || getComputedStyle(document.documentElement).getPropertyValue('--bg-start');
+  const end = localStorage.getItem('--bg-end') || getComputedStyle(document.documentElement).getPropertyValue('--bg-end');
+  const gradient = `linear-gradient(to right, ${start}, ${end})`;
+  document.documentElement.style.setProperty('--bg-main', gradient);
+}
+
 function updateUserName(name) {
   const greeting = document.getElementById("userGreeting");
   greeting.textContent = "Hei, " + name + "!";
@@ -237,6 +251,7 @@ function loadUserName() {
 }
 
 window.onload = function() {
+  applyStoredSettings();
   loadLinks();
   loadUserName();
 };
