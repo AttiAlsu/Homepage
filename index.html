@@ -2,10 +2,12 @@
 
 body {
   margin: 0;
+  padding: 0;
+  box-sizing: border-box;
   font-family: 'Segoe UI', sans-serif;
   display: flex;
   height: 100vh;
-  overflow: hidden;
+  overflow-x: hidden;
   color: var(--text-color);
 }
 
@@ -42,6 +44,7 @@ body {
   justify-content: center;
   align-items: center;
   position: relative;
+  overflow: hidden;
 }
 
 h1 {
@@ -92,12 +95,14 @@ input[type="submit"] {
   flex-direction: column;
   gap: 10px;
   width: 250px;
+  box-sizing: border-box;
 }
 
 .settings-panel input[type="color"],
 .settings-panel input[type="text"] {
   width: 100%;
   padding: 5px;
+  box-sizing: border-box;
 }
 
 .settings-panel button {
@@ -225,8 +230,15 @@ function loadLinks() {
   }
 }
 
+function loadUserName() {
+  const name = localStorage.getItem('userName') || 'käyttäjä';
+  const greeting = document.getElementById("userGreeting");
+  greeting.textContent = "Hei, " + name + "!";
+}
+
 window.onload = function() {
   loadLinks();
+  loadUserName();
 };
 
 </script> </body> </html>
