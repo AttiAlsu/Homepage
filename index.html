@@ -1,259 +1,593 @@
-<!DOCTYPE html> <html lang="fi"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1"> <title>Oma Alkusivu</title> <style> :root { --bg-main: linear-gradient(to right, #7050af, #0f59be); --text-color: #ffffff; --button-color: #b762ad; --sidebar-color: #2c2f4a; --bg-start: #7050af; --bg-end: #0f59be; }
-
-body {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Segoe UI', sans-serif;
-  display: flex;
-  height: 100vh;
-  overflow-x: hidden;
-  color: var(--text-color);
-}
-
-.sidebar {
-  background-color: var(--sidebar-color);
-  width: 250px;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  overflow-y: auto;
-}
-
-.sidebar a {
-  text-decoration: none;
-  background-color: #fff;
-  color: var(--sidebar-color);
-  padding: 10px;
-  border-radius: 5px;
-  font-weight: bold;
-  transition: background 0.3s;
-}
-
-.sidebar a:hover {
-  background-color: var(--button-color);
-  color: white;
-}
-
-.main {
-  flex: 1;
-  background: var(--bg-main);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-  overflow: hidden;
-}
-
-h1 {
-  font-size: 2.5em;
-  margin-bottom: 20px;
-}
-
-.search-box {
-  display: flex;
-  gap: 10px;
-}
-
-input[type="text"] {
-  padding: 10px;
-  width: 300px;
-  font-size: 1em;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-}
-
-input[type="submit"] {
-  padding: 10px 20px;
-  font-size: 1em;
-  background-color: var(--button-color);
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.settings-icon {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  font-size: 1.5em;
-  cursor: pointer;
-}
-
-.settings-panel {
-  position: absolute;
-  top: 60px;
-  right: 20px;
-  background-color: #ffffffdd;
-  color: #000;
-  padding: 15px;
-  border-radius: 10px;
-  display: none;
-  flex-direction: column;
-  gap: 10px;
-  width: 250px;
-  box-sizing: border-box;
-}
-
-.settings-panel input[type="color"],
-.settings-panel input[type="text"] {
-  width: 100%;
-  padding: 5px;
-  box-sizing: border-box;
-}
-
-.settings-panel button {
-  padding: 8px;
-  background-color: var(--sidebar-color);
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.settings-panel button:hover {
-  background-color: var(--button-color);
-}
-
-</style> </head> <body> <div class="sidebar" id="linkList"></div>
-
-<div class="main"> <div class="settings-icon" onclick="toggleSettings()">⚙</div> <h1 id="userGreeting">Hei, käyttäjä!</h1> <div class="search-box"> <form action="https://www.google.com/search" method="get" target="_blank"> <input type="text" name="q" placeholder="Google"> <input type="submit" value="Haku"> </form> </div>
-
-<div class="settings-panel" id="settingsPanel">
-  <label>Lisää uusi linkki:</label>
-  <input type="text" id="newLinkName" placeholder="Nimi">
-  <input type="text" id="newLinkURL" placeholder="https://osoite.fi">
-  <button onclick="addLink()">Lisää</button>
-
-  <label>Poista linkki:</label>
-  <input type="text" id="removeLinkName" placeholder="Nimi">
-  <button onclick="removeLink()">Poista</button>
-
-  <label>Liukuvärin alkuväri:</label>
-  <input type="color" onchange="updateGradient('start', this.value)">
-
-  <label>Liukuvärin loppuväri:</label>
-  <input type="color" onchange="updateGradient('end', this.value)">
-
-  <label>Tekstin väri:</label>
-  <input type="color" onchange="updateSetting('--text-color', this.value)">
-
-  <label>Painikkeen väri:</label>
-  <input type="color" onchange="updateSetting('--button-color', this.value)">
-
-  <label>Sivupalkin väri:</label>
-  <input type="color" onchange="updateSetting('--sidebar-color', this.value)">
-
-  <label>Käyttäjän nimi:</label>
-  <input type="text" id="userNameInput" placeholder="käyttäjä" onchange="updateUserName(this.value)">
-</div>
-
-</div>
-
-<script> function toggleSettings() { const panel = document.getElementById("settingsPanel"); panel.style.display = panel.style.display === "flex" ? "none" : "flex"; }
-
-function updateSetting(variable, value) {
-  document.documentElement.style.setProperty(variable, value);
-  localStorage.setItem(variable, value);
-}
-
-function updateGradient(type, value) {
-  if (type === 'start') localStorage.setItem('--bg-start', value);
-  if (type === 'end') localStorage.setItem('--bg-end', value);
-  const start = localStorage.getItem('--bg-start') || getComputedStyle(document.documentElement).getPropertyValue('--bg-start');
-  const end = localStorage.getItem('--bg-end') || getComputedStyle(document.documentElement).getPropertyValue('--bg-end');
-  const gradient = `linear-gradient(to right, ${start}, ${end})`;
-  document.documentElement.style.setProperty('--bg-main', gradient);
-  localStorage.setItem('--bg-main', gradient);
-}
-
-function applyStoredSettings() {
-  const variables = ['--text-color', '--button-color', '--sidebar-color', '--bg-start', '--bg-end'];
-  variables.forEach(variable => {
-    const value = localStorage.getItem(variable);
-    if (value) {
-      document.documentElement.style.setProperty(variable, value);
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Oma Alkusivu</title>
+  <style>
+    :root {
+      --bg-main: linear-gradient(to right, #7050af, #0f59be);
+      --text-color: #ffffff;
+      --button-color: #b762ad;
+      --sidebar-color: #2c2f4a;
+      --bg-start: #7050af;
+      --bg-end: #0f59be;
+      --modal-bg-light: #ffffff;
+      --modal-text-light: #000000;
+      --modal-bg-dark: #22232a;
+      --modal-text-dark: #f5f5f5;
     }
-  });
-  const start = localStorage.getItem('--bg-start') || getComputedStyle(document.documentElement).getPropertyValue('--bg-start');
-  const end = localStorage.getItem('--bg-end') || getComputedStyle(document.documentElement).getPropertyValue('--bg-end');
-  const gradient = `linear-gradient(to right, ${start}, ${end})`;
-  document.documentElement.style.setProperty('--bg-main', gradient);
-}
 
-function updateUserName(name) {
-  const greeting = document.getElementById("userGreeting");
-  greeting.textContent = "Hei, " + name + "!";
-  localStorage.setItem('userName', name);
-}
+    * { box-sizing: border-box; }
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      color: var(--text-color);
+    }
 
-function addLink() {
-  const name = document.getElementById("newLinkName").value;
-  const url = document.getElementById("newLinkURL").value;
-  if (name && url) {
+    body {
+      display: flex;
+      min-height: 100vh;
+      overflow-x: hidden;
+      background: var(--bg-main);
+    }
+
+    .sidebar {
+      background-color: var(--sidebar-color);
+      width: 250px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+
+    .sidebar a {
+      text-decoration: none;
+      background-color: #fff;
+      color: var(--sidebar-color);
+      padding: 10px;
+      border-radius: 5px;
+      font-weight: bold;
+      transition: background 0.3s, color 0.3s;
+      display: block;
+    }
+
+    .sidebar a:hover {
+      background-color: var(--button-color);
+      color: white;
+    }
+
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      padding: 40px;
+      min-height: 100vh;
+    }
+
+    h1 {
+      font-size: 2.5em;
+      margin: 0 0 20px 0;
+      text-align: center;
+    }
+
+    .search-box {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    input[type="text"] {
+      padding: 10px;
+      width: 300px;
+      font-size: 1em;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    input[type="submit"] {
+      padding: 10px 20px;
+      font-size: 1em;
+      background-color: var(--button-color);
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .settings-icon {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      font-size: 1.5em;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .settings-panel {
+      position: absolute;
+      top: 60px;
+      right: 20px;
+      background-color: #ffffffdd;
+      color: #000;
+      padding: 15px;
+      border-radius: 10px;
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      width: 250px;
+      box-sizing: border-box;
+      z-index: 40;
+    }
+
+    .settings-panel input[type="color"],
+    .settings-panel input[type="text"],
+    .settings-panel select {
+      width: 100%;
+      padding: 5px;
+      box-sizing: border-box;
+    }
+
+    .settings-panel button {
+      padding: 8px;
+      background-color: var(--sidebar-color);
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .settings-panel button:hover {
+      background-color: var(--button-color);
+    }
+
+    .mobile-links-button {
+      display: none;
+      position: fixed;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: var(--button-color);
+      color: white;
+      border: none;
+      padding: 12px 18px;
+      border-radius: 999px;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.25);
+      font-weight: 700;
+      cursor: pointer;
+      z-index: 50;
+    }
+
+    .links-modal {
+      display: none;
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      bottom: 78px;
+      background: var(--modal-bg-light);
+      color: var(--modal-text-light);
+      width: calc(100% - 40px);
+      max-width: 420px;
+      border-radius: 12px;
+      padding: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+      z-index: 60;
+      max-height: 60vh;
+      overflow-y: auto;
+      opacity: 0;
+      pointer-events: none;
+      transform-origin: bottom center;
+      transition: opacity 220ms ease, transform 220ms ease;
+    }
+
+    .links-modal.show {
+      display: block;
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+      pointer-events: auto;
+    }
+
+    .links-modal.hide {
+      opacity: 0;
+      transform: translateX(-50%) translateY(12px);
+      pointer-events: none;
+    }
+
+    .links-modal .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .links-modal .close-btn {
+      background: transparent;
+      border: none;
+      font-size: 1.2em;
+      cursor: pointer;
+    }
+
+    .links-modal a {
+      display: block;
+      text-decoration: none;
+      padding: 10px;
+      border-radius: 8px;
+      margin-top: 8px;
+      background: #f0f0f0;
+      color: #111;
+      font-weight: 600;
+    }
+
+    .links-modal.theme-dark {
+      background: var(--modal-bg-dark);
+      color: var(--modal-text-dark);
+    }
+    .links-modal.theme-dark a {
+      background: #2b2c33;
+      color: var(--modal-text-dark);
+    }
+
+    a:focus, button:focus, input:focus { outline: 3px solid #ffd; outline-offset: 2px; }
+
+    /* RESPONSIVE: mobiiliherkkyys nyt 600px */
+    @media (max-width: 650px) {
+      body {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        display: none;
+      }
+
+      .main {
+        padding: 18px;
+      }
+
+      input[type="text"] {
+        width: calc(100vw - 120px);
+        max-width: 100%;
+      }
+
+      h1 { font-size: 1.6em; }
+
+      .mobile-links-button {
+        display: inline-block;
+      }
+    }
+
+    @media (min-width: 1200px) {
+      .main { padding: 60px; }
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="sidebar" id="linkList" aria-label="Pikalinkit"></div>
+
+  <div class="main" role="main">
+    <div class="settings-icon" onclick="toggleSettings()" title="Asetukset" aria-hidden="false">⚙</div>
+
+    <h1 id="userGreeting">Hei, käyttäjä!</h1>
+
+    <div class="search-box" aria-label="Haku">
+      <form action="https://www.google.com/search" method="get" target="_blank" style="display:flex; gap:10px; align-items:center;">
+        <input type="text" name="q" placeholder="Google" aria-label="Hakulauseke">
+        <input type="submit" value="Haku" aria-label="Hae">
+      </form>
+    </div>
+
+    <div class="settings-panel" id="settingsPanel" aria-hidden="true">
+      <label>Lisää uusi linkki:</label>
+      <input type="text" id="newLinkName" placeholder="Nimi" aria-label="Linkin nimi">
+      <input type="text" id="newLinkURL" placeholder="https://osoite.fi" aria-label="Linkin osoite">
+      <button onclick="addLink()" type="button">Lisää</button>
+
+      <label>Poista linkki:</label>
+      <input type="text" id="removeLinkName" placeholder="Nimi" aria-label="Poistettavan linkin nimi">
+      <button onclick="removeLink()" type="button">Poista</button>
+
+      <label>Liukuvärin alkuväri:</label>
+      <input type="color" onchange="updateGradient('start', this.value)" aria-label="Liukuvärin alkuväri">
+
+      <label>Liukuvärin loppuväri:</label>
+      <input type="color" onchange="updateGradient('end', this.value)" aria-label="Liukuvärin loppuväri">
+
+      <label>Tekstin väri:</label>
+      <input type="color" onchange="updateSetting('--text-color', this.value)" aria-label="Tekstin väri">
+
+      <label>Painikkeen väri:</label>
+      <input type="color" onchange="updateSetting('--button-color', this.value)" aria-label="Painikkeen väri">
+
+      <label>Sivupalkin väri:</label>
+      <input type="color" onchange="updateSetting('--sidebar-color', this.value)" aria-label="Sivupalkin väri">
+
+      <label>Valikon teema:</label>
+      <select id="menuThemeSelect" onchange="updateMenuTheme(this.value)" aria-label="Valikon teema">
+        <option value="light">Vaalea</option>
+        <option value="dark">Tumma</option>
+      </select>
+
+      <label>Käyttäjän nimi:</label>
+      <input type="text" id="userNameInput" placeholder="käyttäjä" onchange="updateUserName(this.value)" aria-label="Käyttäjän nimi">
+    </div>
+  </div>
+
+  <button class="mobile-links-button" id="mobileLinksBtn" aria-haspopup="true" aria-expanded="false" aria-controls="mobileLinksModal" onclick="toggleMobileLinks()">
+    Pikalinkit
+  </button>
+
+  <div class="links-modal" id="mobileLinksModal" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal-header">
+      <strong>Pikalinkit</strong>
+      <button class="close-btn" onclick="toggleMobileLinks()" aria-label="Sulje">✕</button>
+    </div>
+    <div id="mobileLinkContainer" style="margin-top:8px;"></div>
+  </div>
+
+<script>
+  const MOBILE_BREAKPOINT = 600; // sama kuin CSS media query: mobiiliversio aktivoituu <= 600px
+  let modalTimeout = null;
+
+  function toggleSettings() {
+    const panel = document.getElementById("settingsPanel");
+    const isShown = panel.style.display === "flex";
+    panel.style.display = isShown ? "none" : "flex";
+    panel.setAttribute('aria-hidden', isShown ? 'true' : 'false');
+  }
+
+  function updateSetting(variable, value) {
+    document.documentElement.style.setProperty(variable, value);
+    localStorage.setItem(variable, value);
+  }
+
+  function updateGradient(type, value) {
+    if (type === 'start') localStorage.setItem('--bg-start', value);
+    if (type === 'end') localStorage.setItem('--bg-end', value);
+    const start = localStorage.getItem('--bg-start') || getComputedStyle(document.documentElement).getPropertyValue('--bg-start');
+    const end = localStorage.getItem('--bg-end') || getComputedStyle(document.documentElement).getPropertyValue('--bg-end');
+    const gradient = `linear-gradient(to right, ${start}, ${end})`;
+    document.documentElement.style.setProperty('--bg-main', gradient);
+    localStorage.setItem('--bg-main', gradient);
+  }
+
+  function applyStoredSettings() {
+    const variables = ['--text-color', '--button-color', '--sidebar-color', '--bg-start', '--bg-end'];
+    variables.forEach(variable => {
+      const value = localStorage.getItem(variable);
+      if (value) {
+        document.documentElement.style.setProperty(variable, value);
+      }
+    });
+    const start = localStorage.getItem('--bg-start') || getComputedStyle(document.documentElement).getPropertyValue('--bg-start');
+    const end = localStorage.getItem('--bg-end') || getComputedStyle(document.documentElement).getPropertyValue('--bg-end');
+    const gradient = `linear-gradient(to right, ${start}, ${end})`;
+    document.documentElement.style.setProperty('--bg-main', gradient);
+
+    const theme = localStorage.getItem('menuTheme') || 'light';
+    applyMenuTheme(theme);
+    const select = document.getElementById('menuThemeSelect');
+    if (select) select.value = theme;
+  }
+
+  function applyMenuTheme(theme) {
+    const modal = document.getElementById('mobileLinksModal');
+    if (!modal) return;
+    if (theme === 'dark') modal.classList.add('theme-dark');
+    else modal.classList.remove('theme-dark');
+  }
+  function updateMenuTheme(value) {
+    localStorage.setItem('menuTheme', value);
+    applyMenuTheme(value);
+  }
+
+  function updateUserName(name) {
+    const greeting = document.getElementById("userGreeting");
+    greeting.textContent = "Hei, " + name + "!";
+    localStorage.setItem('userName', name);
+  }
+  function loadUserName() {
+    const name = localStorage.getItem('userName') || 'käyttäjä';
+    const greeting = document.getElementById("userGreeting");
+    greeting.textContent = "Hei, " + name + "!";
+  }
+
+  function addLink() {
+    const name = document.getElementById("newLinkName").value.trim();
+    const url = document.getElementById("newLinkURL").value.trim();
+    if (name && url) {
+      appendLinkToAll(name, url);
+      document.getElementById("newLinkName").value = "";
+      document.getElementById("newLinkURL").value = "";
+      saveLinks();
+    }
+  }
+
+  function removeLink() {
+    const name = document.getElementById("removeLinkName").value.trim();
+    if (!name) return;
+    const linkList = document.getElementById("linkList");
+    const links = Array.from(linkList.getElementsByTagName("a"));
+    for (let i = 0; i < links.length; i++) {
+      if (links[i].textContent === name) {
+        linkList.removeChild(links[i]);
+        break;
+      }
+    }
+    updateMobileListFromSidebar();
+    document.getElementById("removeLinkName").value = "";
+    saveLinks();
+  }
+
+  function appendLinkToAll(name, url) {
     const linkList = document.getElementById("linkList");
     const a = document.createElement("a");
     a.href = url;
     a.target = "_blank";
+    a.rel = "noopener noreferrer";
     a.textContent = name;
     linkList.appendChild(a);
-    document.getElementById("newLinkName").value = "";
-    document.getElementById("newLinkURL").value = "";
-    saveLinks();
-  }
-}
 
-function removeLink() {
-  const name = document.getElementById("removeLinkName").value;
-  const linkList = document.getElementById("linkList");
-  const links = linkList.getElementsByTagName("a");
-  for (let i = 0; i < links.length; i++) {
-    if (links[i].textContent === name) {
-      linkList.removeChild(links[i]);
-      break;
+    const mobileContainer = document.getElementById("mobileLinkContainer");
+    const a2 = document.createElement("a");
+    a2.href = url;
+    a2.target = "_blank";
+    a2.rel = "noopener noreferrer";
+    a2.textContent = name;
+    a2.addEventListener('click', onMobileLinkClick);
+    mobileContainer.appendChild(a2);
+  }
+
+  function saveLinks() {
+    const linkList = document.getElementById("linkList");
+    const links = linkList.getElementsByTagName("a");
+    const linkData = [];
+    for (let i = 0; i < links.length; i++) {
+      linkData.push({ name: links[i].textContent, url: links[i].href });
     }
+    localStorage.setItem("links", JSON.stringify(linkData));
   }
-  document.getElementById("removeLinkName").value = "";
-  saveLinks();
-}
 
-function saveLinks() {
-  const linkList = document.getElementById("linkList");
-  const links = linkList.getElementsByTagName("a");
-  const linkData = [];
-  for (let i = 0; i < links.length; i++) {
-    linkData.push({ name: links[i].textContent, url: links[i].href });
-  }
-  localStorage.setItem("links", JSON.stringify(linkData));
-}
-
-function loadLinks() {
-  const linkList = document.getElementById("linkList");
-  const linkData = JSON.parse(localStorage.getItem("links"));
-  if (linkData) {
+  function loadLinks() {
+    const linkList = document.getElementById("linkList");
+    const mobileContainer = document.getElementById("mobileLinkContainer");
+    linkList.innerHTML = "";
+    mobileContainer.innerHTML = "";
+    const raw = localStorage.getItem("links");
+    let linkData = [];
+    try { linkData = raw ? JSON.parse(raw) : []; } catch (e) { linkData = []; }
+    if (!linkData || linkData.length === 0) {
+      linkData = [
+        { name: "Google", url: "https://www.google.com" },
+        { name: "Wikipedia", url: "https://fi.wikipedia.org" }
+      ];
+    }
     linkData.forEach(link => {
       const a = document.createElement("a");
       a.href = link.url;
       a.target = "_blank";
+      a.rel = "noopener noreferrer";
       a.textContent = link.name;
       linkList.appendChild(a);
+
+      const a2 = document.createElement("a");
+      a2.href = link.url;
+      a2.target = "_blank";
+      a2.rel = "noopener noreferrer";
+      a2.textContent = link.name;
+      a2.addEventListener('click', onMobileLinkClick);
+      mobileContainer.appendChild(a2);
     });
   }
-}
 
-function loadUserName() {
-  const name = localStorage.getItem('userName') || 'käyttäjä';
-  const greeting = document.getElementById("userGreeting");
-  greeting.textContent = "Hei, " + name + "!";
-}
+  function updateMobileListFromSidebar() {
+    const mobileContainer = document.getElementById("mobileLinkContainer");
+    const linkList = document.getElementById("linkList");
+    mobileContainer.innerHTML = "";
+    const links = linkList.getElementsByTagName("a");
+    for (let i = 0; i < links.length; i++) {
+      const a2 = document.createElement("a");
+      a2.href = links[i].href;
+      a2.target = "_blank";
+      a2.rel = "noopener noreferrer";
+      a2.textContent = links[i].textContent;
+      a2.addEventListener('click', onMobileLinkClick);
+      mobileContainer.appendChild(a2);
+    }
+  }
 
-window.onload = function() {
-  applyStoredSettings();
-  loadLinks();
-  loadUserName();
-};
+  function isMobileWidth() {
+    return window.innerWidth <= MOBILE_BREAKPOINT;
+  }
 
-</script> </body> </html>
+  function toggleMobileLinks() {
+    // Only allow mobile modal behavior when viewport fits mobile breakpoint
+    if (!isMobileWidth()) return;
+    const modal = document.getElementById("mobileLinksModal");
+    const btn = document.getElementById("mobileLinksBtn");
+    const isShown = modal.classList.contains('show');
+
+    if (isShown) {
+      modal.classList.remove('show');
+      modal.classList.add('hide');
+      modal.setAttribute('aria-hidden', 'true');
+      btn.setAttribute('aria-expanded', 'false');
+      clearTimeout(modalTimeout);
+      modalTimeout = setTimeout(() => {
+        modal.style.display = "none";
+        modal.classList.remove('hide');
+      }, 260);
+    } else {
+      applyMenuTheme(localStorage.getItem('menuTheme') || 'light');
+      updateMobileListFromSidebar();
+      modal.style.display = "block";
+      requestAnimationFrame(() => {
+        modal.classList.add('show');
+        modal.classList.remove('hide');
+      });
+      modal.setAttribute('aria-hidden', 'false');
+      btn.setAttribute('aria-expanded', 'true');
+      setTimeout(() => {
+        const first = modal.querySelector('a');
+        if (first) first.focus();
+      }, 300);
+    }
+  }
+
+  function onMobileLinkClick(e) {
+    // Ensure mobile modal only tries to close when in mobile breakpoint
+    if (!isMobileWidth()) return;
+    const modal = document.getElementById("mobileLinksModal");
+    const btn = document.getElementById("mobileLinksBtn");
+    modal.classList.remove('show');
+    modal.classList.add('hide');
+    modal.setAttribute('aria-hidden', 'true');
+    btn.setAttribute('aria-expanded', 'false');
+    clearTimeout(modalTimeout);
+    modalTimeout = setTimeout(() => {
+      modal.style.display = "none";
+      modal.classList.remove('hide');
+    }, 260);
+    // link opens normally (target="_blank")
+  }
+
+  // Close mobile modal when tapping outside, but only in mobile breakpoint
+  document.addEventListener('click', function(e) {
+    const modal = document.getElementById('mobileLinksModal');
+    const btn = document.getElementById('mobileLinksBtn');
+    if (!modal || !btn) return;
+    if (!isMobileWidth()) return;
+    if (!modal.contains(e.target) && !btn.contains(e.target)) {
+      if (modal.classList.contains('show')) toggleMobileLinks();
+    }
+  });
+
+  // On resize, ensure mobile modal stays closed when leaving mobile breakpoint
+  window.addEventListener('resize', function() {
+    const modal = document.getElementById("mobileLinksModal");
+    const btn = document.getElementById("mobileLinksBtn");
+    if (!modal || !btn) return;
+    if (!isMobileWidth()) {
+      modal.style.display = "none";
+      modal.classList.remove('show', 'hide');
+      modal.setAttribute('aria-hidden', 'true');
+      btn.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  window.onload = function() {
+    applyStoredSettings();
+    loadLinks();
+    loadUserName();
+  };
+</script>
+
+</body>
+</html>
